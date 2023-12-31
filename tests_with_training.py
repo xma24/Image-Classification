@@ -25,7 +25,7 @@ if __name__ == "__main__":
         precision=16,
         log_every_n_steps=10,
         min_epochs=1,
-        max_epochs=5,
+        max_epochs=2,
         strategy="ddp",
         accelerator="gpu",
         train_dataloder=train_dataloder,
