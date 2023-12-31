@@ -90,7 +90,7 @@ class ImageClassification:
                 ("data", "imagenet_class_index.json")
             )  # Path within the package
             imagenet_class_index_file_path = pkg_resources.resource_filename(
-                "my_package", resource_path
+                "ImageClassification", resource_path
             )
 
             with open(imagenet_class_index_file_path, "r") as f:
