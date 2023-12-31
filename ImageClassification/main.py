@@ -15,6 +15,7 @@ from PIL import Image
 class ImageClassification:
     def __init__(
         self,
+        batch_size,
         random_state=None,
         model_name="efficientnet_b0",
         lr=1e-3,
@@ -29,7 +30,12 @@ class ImageClassification:
         val_dataloader=None,
         class_to_idx=None,
         val_transform=None,
+        optimizer="Adam",
+        scheduler="cosAnn",
+        single_lr=True,
+        backbone_lr=None,
     ):
+        self.batch_size = batch_size
         self.random_state = random_state
         self.model_name = model_name
         self.lr = lr
@@ -68,6 +74,10 @@ class ImageClassification:
             )
         else:
             self.val_transform = val_transform
+        self.optimizer = optimizer
+        self.scheduler = scheduler
+        self.single_lr = single_lr
+        self.backbone_lr = backbone_lr
 
     def fit(self):
         trainer = pl.Trainer(
@@ -82,6 +92,7 @@ class ImageClassification:
 
         if self.train_dataloder is None:
             self.model = Model(
+                self.batch_size,
                 self.lr,
                 num_classes=None,
                 model_name=self.model_name,
@@ -106,10 +117,16 @@ class ImageClassification:
         else:
             if len(self.class_to_idx) > 0 and self.class_to_idx is not None:
                 self.model = Model(
+                    self.batch_size,
                     self.lr,
                     num_classes=len(self.class_to_idx),
                     model_name=self.model_name,
                     is_train_pl=True,
+                    optimizer=self.optimizer,
+                    scheduler=self.scheduler,
+                    single_lr=self.single_lr,
+                    backbone_lr=self.backbone_lr,
+                    max_epochs=self.max_epochs,
                 )
             else:
                 print(f"Model config error.")

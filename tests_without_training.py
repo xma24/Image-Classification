@@ -6,8 +6,9 @@ if __name__ == "__main__":
     batch_size = 64
 
     image_classifier = ImageClassification(
+        batch_size=batch_size,
         random_state=None,
-        model_name="efficientnetv2_rw_m.agc_in1k",
+        model_name="efficientnet_b0",
         lr=1e-3,
         num_gpus=1,
         precision=16,
@@ -23,6 +24,10 @@ if __name__ == "__main__":
         # class_to_idx=class_to_idx,
         class_to_idx=None,
         val_transform=None,  ## if None, use the defautl data augmentation;
+        optimizer="Adam",
+        scheduler="cosAnn",
+        single_lr=False,
+        backbone_lr=1e-4,
     )
 
     image_classifier.fit()
