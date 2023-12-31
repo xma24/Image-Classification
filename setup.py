@@ -25,7 +25,7 @@ from __future__ import print_function
 
 import setuptools
 
-_VERSION = "0.4.1"
+_VERSION = "0.4.2"
 
 REQUIRED_PACKAGES = []
 
@@ -39,6 +39,8 @@ setuptools.setup(
     dependency_links=DEPENDENCY_LINKS,
     url="https://github.com/xma24/image_classification",
     license="MIT License",
+    author="Xin Ma",
+    author_email="xmafellowacm@gmail.com",
     package_data={"ImageClassification": ["data/*.json"]},
     packages=setuptools.find_packages(exclude=["tests"]),
 )
