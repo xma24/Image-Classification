@@ -32,7 +32,7 @@ REQUIRED_PACKAGES = []
 DEPENDENCY_LINKS = []
 
 setuptools.setup(
-    name="ImageCls",
+    name="ImageClassification",
     version=_VERSION,
     description="Classifier for images",
     install_requires=REQUIRED_PACKAGES,
