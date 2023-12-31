@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     image_classifier = ImageClassification(
         random_state=None,
+        model_name="efficientnet_b0",
         lr=1e-3,
         num_gpus=1,
         precision=16,
