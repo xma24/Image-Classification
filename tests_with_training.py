@@ -29,7 +29,6 @@ if __name__ == "__main__":
         strategy="ddp",
         accelerator="gpu",
         train_dataloder=train_dataloder,
-        # train_dataloder=None,
         val_dataloader=val_dataloader,
         class_to_idx=class_to_idx,
         val_transform=None,
