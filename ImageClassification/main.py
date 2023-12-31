@@ -85,7 +85,7 @@ class ImageClassification:
             )
             print(f"Not train the model. Use pretrained model.")
 
-            with open("imagenet_class_index.json") as f:
+            with open("/".join(("data", "imagenet_class_index.json"))) as f:
                 idx_to_class_strkey = json.load(f)
                 self.idx_to_class = {}
                 for key, value in idx_to_class_strkey.items():
