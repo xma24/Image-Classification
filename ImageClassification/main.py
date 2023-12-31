@@ -34,6 +34,8 @@ class ImageClassification:
         scheduler="cosAnn",
         single_lr=True,
         backbone_lr=None,
+        onnx_file_path=None,
+        input_sample=None,
     ):
         self.batch_size = batch_size
         self.random_state = random_state
@@ -78,6 +80,8 @@ class ImageClassification:
         self.scheduler = scheduler
         self.single_lr = single_lr
         self.backbone_lr = backbone_lr
+        self.onnx_file_path = onnx_file_path
+        self.input_sample = input_sample
 
     def fit(self):
         trainer = pl.Trainer(
@@ -137,6 +141,8 @@ class ImageClassification:
                 train_dataloaders=self.train_dataloder,
                 val_dataloaders=self.val_dataloader,
             )
+        if self.onnx_file_path is not None and self.input_sample is not None:
+            self.save_onnx(self.onnx_file_path, self.input_sample)
 
     @torch.no_grad()
     def transform(self, input_data):
@@ -214,6 +220,7 @@ class ImageClassification:
                     "output": {0: "batch_size"},
                 },
             )
+        print(f"Pickled ONNX model at {onnx_file_path}")
 
 
 def load_model(path):

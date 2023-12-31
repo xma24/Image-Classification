@@ -23,6 +23,8 @@ if __name__ == "__main__":
         # scheduler="cosAnn",
         # single_lr=False,
         # backbone_lr=1e-4,
+        # onnx_file_path=None,
+        # input_sample=None,
     )
 
     image_classifier.fit()

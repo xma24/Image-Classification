@@ -13,6 +13,8 @@ $ pip install git+https://github.com/xma24/image_classification.git
 ### Image classification without training
 
 ```python
+import os
+
 from ImageClassification import ImageClassification, load_model
 
 if __name__ == "__main__":
@@ -36,6 +38,8 @@ if __name__ == "__main__":
         # scheduler="cosAnn",
         # single_lr=False,
         # backbone_lr=1e-4,
+        # onnx_file_path=None,
+        # input_sample=None,
     )
 
     image_classifier.fit()
@@ -65,6 +69,7 @@ if __name__ == "__main__":
 ```python 
 import os
 
+import torch
 from ImageClassification import ImageClassification, ModelUtils, load_model
 
 if __name__ == "__main__":
@@ -101,6 +106,8 @@ if __name__ == "__main__":
         scheduler="cosAnn",
         single_lr=False,
         backbone_lr=1e-4,
+        onnx_file_path="./work_dirs/model.onnx",
+        input_sample=torch.randn(1, 3, 224, 224),
     )
 
     image_classifier.fit()

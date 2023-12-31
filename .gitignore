@@ -161,3 +161,5 @@ cython_debug/
 
 **lightning_logs*
 **.pkl
+**.onnx
+**.pkl

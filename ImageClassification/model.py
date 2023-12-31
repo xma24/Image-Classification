@@ -21,7 +21,9 @@ logger_initialized = {}
 
 class ModelUtils:
     @staticmethod
-    def get_val_dataloader(val_images_txtfile, val_labels_txtfile, batch_size):
+    def get_val_dataloader(
+        val_images_txtfile, val_labels_txtfile, batch_size, N=None, M=None
+    ):
         # val_images_txtfile = os.path.join("./work_dirs/val_images.txt")
         # val_labels_txtfile = os.path.join("./work_dirs/val_labels.txt")
         val_image_paths = DatasetsDataloadersUtils.read_list_from_txtfile(
@@ -59,7 +61,9 @@ class ModelUtils:
         return val_dataloader, class_to_idx
 
     @staticmethod
-    def get_train_dataloader(train_images_txtfile, train_labels_txtfile, batch_size):
+    def get_train_dataloader(
+        train_images_txtfile, train_labels_txtfile, batch_size, N=1, M=1
+    ):
         # train_images_txtfile = os.path.join("./work_dirs/train_images.txt")
         # train_labels_txtfile = os.path.join("./work_dirs/train_labels.txt")
         train_image_paths = DatasetsDataloadersUtils.read_list_from_txtfile(
@@ -89,8 +93,8 @@ class ModelUtils:
             labels=train_label_indices,
             transform=None,
             is_train=True,
-            N=2,
-            M=10,
+            N=N,
+            M=M,
         )
 
         train_dataloader = DatasetsDataloaders.get_dataloader(
