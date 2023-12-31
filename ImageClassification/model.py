@@ -302,7 +302,7 @@ class Model(pl.LightningModule):
                 sub_lr_name,
                 sub_param_group["lr"],
                 batch_size=self.batch_size,
-                **self.log_config_step,
+                **self.log_config_epoch,
             )
 
     def different_lr(self, module_lr_dict, lr):
@@ -410,7 +410,7 @@ class Model(pl.LightningModule):
             "train_loss",
             loss,
             batch_size=self.batch_size,
-            **self.log_config_step,
+            **self.log_config_epoch,
         )
 
         return loss
