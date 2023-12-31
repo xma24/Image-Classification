@@ -1,7 +1,8 @@
 import os
-from ImageClassification.model import ModelUtils
-from ImageClassification.main import ImageClassification, load_model
 
+import torch
+from ImageClassification.main import ImageClassification, load_model
+from ImageClassification.model import ModelUtils
 
 if __name__ == "__main__":
     batch_size = 512
@@ -44,6 +45,9 @@ if __name__ == "__main__":
     os.makedirs("./work_dirs", exist_ok=True)
     project_path = "./work_dirs/image_classifier.pkl"
     image_classifier.save(project_path)
+
+    dummy_input = torch.randn(1, 3, 224, 224)
+    image_classifier.save_onnx("./work_dirs/model.onnx", dummy_input)
 
     image_classifier = load_model(project_path)
     predictions = image_classifier.transform(
