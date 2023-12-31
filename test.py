@@ -4,8 +4,7 @@ from ImageClassification.main import ImageClassification, load_model
 
 
 if __name__ == "__main__":
-    batch_size = 64
-
+    batch_size = 512
     train_images_txtfile = os.path.join("./work_dirs/train_images.txt")
     train_labels_txtfile = os.path.join("./work_dirs/train_labels.txt")
     train_dataloder, class_to_idx = ModelUtils.get_train_dataloader(
@@ -18,13 +17,15 @@ if __name__ == "__main__":
     )
 
     image_classifier = ImageClassification(
+        batch_size=batch_size,
         random_state=None,
-        lr=1e-9,
-        num_gpus=1,
+        model_name="efficientnet_b0",
+        lr=1e-3,
+        num_gpus=2,
         precision=16,
         log_every_n_steps=10,
         min_epochs=1,
-        max_epochs=1,
+        max_epochs=5,
         strategy="ddp",
         accelerator="gpu",
         train_dataloder=train_dataloder,
@@ -32,6 +33,10 @@ if __name__ == "__main__":
         val_dataloader=val_dataloader,
         class_to_idx=class_to_idx,
         val_transform=None,
+        optimizer="Adam",
+        scheduler="cosAnn",
+        single_lr=False,
+        backbone_lr=1e-4,
     )
 
     image_classifier.fit()
