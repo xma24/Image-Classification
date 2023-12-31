@@ -1,7 +1,6 @@
 import os
-import sys
 
-from ImageClassification import ImageClassification, ModelUtils, load_model
+from ImageClassification import ImageClassification, load_model
 
 if __name__ == "__main__":
     batch_size = 64

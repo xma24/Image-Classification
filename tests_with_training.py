@@ -1,5 +1,4 @@
 import os
-import sys
 
 from ImageClassification import ImageClassification, ModelUtils, load_model
 
