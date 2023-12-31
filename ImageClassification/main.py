@@ -15,7 +15,7 @@ from PIL import Image
 class ImageClassification:
     def __init__(
         self,
-        batch_size,
+        batch_size=32,
         random_state=None,
         model_name="efficientnet_b0",
         lr=1e-3,
