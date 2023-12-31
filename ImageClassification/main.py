@@ -46,7 +46,10 @@ class ImageClassification:
         self.train_dataloder = train_dataloder
         self.val_dataloader = val_dataloader
         self.class_to_idx = class_to_idx
-        self.idx_to_class = {v: k for k, v in self.class_to_idx.items()}
+        if class_to_idx is not None:
+            self.idx_to_class = {v: k for k, v in self.class_to_idx.items()}
+        else:
+            self.idx_to_class = None
         if val_transform is None:
             self.val_transform = transforms.Compose(
                 [
@@ -80,7 +83,7 @@ class ImageClassification:
         if self.train_dataloder is None:
             self.model = Model(
                 self.lr,
-                num_classes=len(self.class_to_idx),
+                num_classes=None,
                 model_name=self.model_name,
                 is_train_pl=False,
             )
