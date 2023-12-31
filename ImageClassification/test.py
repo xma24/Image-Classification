@@ -35,6 +35,8 @@ if __name__ == "__main__":
     )
 
     image_classifier.fit()
+
+    os.makedirs("./work_dirs", exist_ok=True)
     project_path = "./work_dirs/image_classifier.pkl"
     image_classifier.save(project_path)
 
