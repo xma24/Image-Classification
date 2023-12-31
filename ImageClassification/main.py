@@ -3,6 +3,7 @@ import os
 import sys
 
 import dill
+import pkg_resources
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -85,7 +86,14 @@ class ImageClassification:
             )
             print(f"Not train the model. Use pretrained model.")
 
-            with open("/".join(("data", "imagenet_class_index.json"))) as f:
+            resource_path = "/".join(
+                ("data", "imagenet_class_index.json")
+            )  # Path within the package
+            imagenet_class_index_file_path = pkg_resources.resource_filename(
+                "my_package", resource_path
+            )
+
+            with open(imagenet_class_index_file_path, "r") as f:
                 idx_to_class_strkey = json.load(f)
                 self.idx_to_class = {}
                 for key, value in idx_to_class_strkey.items():
