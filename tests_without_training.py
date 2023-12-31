@@ -3,31 +3,27 @@ import os
 from ImageClassification import ImageClassification, load_model
 
 if __name__ == "__main__":
-    batch_size = 64
-
     image_classifier = ImageClassification(
-        batch_size=batch_size,
-        random_state=None,
+        # batch_size=batch_size,
+        # random_state=None,
         model_name="efficientnet_b0",
-        lr=1e-3,
-        num_gpus=1,
-        precision=16,
-        log_every_n_steps=10,
-        min_epochs=1,
-        max_epochs=10,
-        strategy="ddp",
-        accelerator="gpu",
+        # lr=1e-3,
+        # num_gpus=2,
+        # precision=16,
+        # log_every_n_steps=10,
+        # min_epochs=1,
+        # max_epochs=2,
+        # strategy="ddp",
+        # accelerator="gpu",
         # train_dataloder=train_dataloder,
-        train_dataloder=None,  ## set to None when not doing training with pytorch lightning; use the default pretrained model to do inference;
+        # train_dataloder=None,
         # val_dataloader=val_dataloader,
-        val_dataloader=None,
         # class_to_idx=class_to_idx,
-        class_to_idx=None,
-        val_transform=None,  ## if None, use the defautl data augmentation;
-        optimizer="Adam",
-        scheduler="cosAnn",
-        single_lr=False,
-        backbone_lr=1e-4,
+        # val_transform=None,
+        # optimizer="Adam",
+        # scheduler="cosAnn",
+        # single_lr=False,
+        # backbone_lr=1e-4,
     )
 
     image_classifier.fit()
