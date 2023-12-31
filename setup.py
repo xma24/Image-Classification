@@ -25,14 +25,14 @@ from __future__ import print_function
 
 import setuptools
 
-_VERSION = "0.1"
+_VERSION = "0.2"
 
 REQUIRED_PACKAGES = []
 
 DEPENDENCY_LINKS = []
 
 setuptools.setup(
-    name="image_classification",
+    name="ImageCls",
     version=_VERSION,
     description="Classifier for images",
     install_requires=REQUIRED_PACKAGES,
