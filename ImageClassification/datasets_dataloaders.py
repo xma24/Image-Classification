@@ -4,8 +4,8 @@ import os
 import random
 import sys
 
+from ImageClassification.rand_augment import RandAugment
 from PIL import Image
-from rand_augment import RandAugment
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 

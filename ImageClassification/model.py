@@ -9,7 +9,10 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
 
-from datasets_dataloaders import DatasetsDataloaders, DatasetsDataloadersUtils
+from ImageClassification.datasets_dataloaders import (
+    DatasetsDataloaders,
+    DatasetsDataloadersUtils,
+)
 
 
 class ModelUtils:

@@ -1,6 +1,6 @@
 import os
-from model import ModelUtils
-from main import ImageClassification, load_model
+from ImageClassification.model import ModelUtils
+from ImageClassification.main import ImageClassification, load_model
 
 
 if __name__ == "__main__":
