@@ -3,6 +3,8 @@ import multiprocessing
 import os
 import random
 import sys
+import numpy as np
+import shutil
 
 from ImageClassification.rand_augment import RandAugment
 from PIL import Image
@@ -22,6 +24,333 @@ from torchvision import transforms
 
 
 class DatasetsDataloadersUtils:
+    @staticmethod
+    def save_listOflist_to_txt(list_of_lists, file_path):
+        with open(file_path, "w") as file:
+            for sublist in list_of_lists:
+                # Convert each element in the sublist to a string and join with commas
+                line = ",".join(map(str, sublist))
+
+                # Write the line to the file
+                file.write(line + "\n")
+
+    @staticmethod
+    def read_txt_to_listOflist(file_path):
+        result = []
+        with open(file_path, "r") as file:
+            for line in file:
+                # Split each line by commas and convert elements to integers
+                sublist = [int(x) for x in line.strip().split(",")]
+
+                # Append the sublist to the result list
+                result.append(sublist)
+        return result
+
+    @staticmethod
+    def voc_train_single_class_summary(voc_cls_train_labels_txt_path):
+        train_cls_classid_list = DatasetsDataloadersUtils.read_txt_to_listOflist(
+            voc_cls_train_labels_txt_path
+        )
+        flat_list = [item for sublist in train_cls_classid_list for item in sublist]
+        unique_numbers = set(flat_list)
+        unique_numbers_list = list(unique_numbers)
+        print(f"==>> unique_numbers_list: {unique_numbers_list}")
+
+        train_single_class_summary_dict = {}
+        for train_label_list_per in train_cls_classid_list:
+            if len(train_label_list_per) == 1:
+                train_label_per = train_label_list_per[0]
+                if train_label_per in train_single_class_summary_dict:
+                    train_single_class_summary_dict[train_label_per] += 1
+                else:
+                    train_single_class_summary_dict[train_label_per] = 1
+        train_single_class_summary_dict = {
+            key: train_single_class_summary_dict[key]
+            for key in sorted(train_single_class_summary_dict)
+        }
+        print(
+            f"==>> train_single_class_summary_dict: {train_single_class_summary_dict}"
+        )
+
+    @staticmethod
+    def voc_get_single_class_train_image_path(
+        voc_cls_train_images_txt_path,
+        voc_cls_train_labels_txt_path,
+        voc_single_cls_train_images_txt_path,
+        voc_single_cls_train_labels_txt_path,
+    ):
+        train_cls_classid_list = DatasetsDataloadersUtils.read_txt_to_listOflist(
+            voc_cls_train_labels_txt_path
+        )
+        train_cls_image_path_list = DatasetsDataloadersUtils.read_list_from_txtfile(
+            voc_cls_train_images_txt_path
+        )
+
+        single_train_image_path_list = []
+        single_train_label_list = []
+        for idx, train_label_list_per in enumerate(train_cls_classid_list):
+            if len(train_label_list_per) == 1:
+                train_label_per = train_label_list_per[0]
+                single_train_label_list.append(train_label_per)
+                single_train_image_path_list.append(train_cls_image_path_list[idx])
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            single_train_image_path_list, voc_single_cls_train_images_txt_path
+        )
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            single_train_label_list, voc_single_cls_train_labels_txt_path
+        )
+
+    @staticmethod
+    def voc_get_single_class_val_image_path(
+        voc_cls_val_images_txt_path,
+        voc_cls_val_labels_txt_path,
+        voc_single_cls_val_images_txt_path,
+        voc_single_cls_val_labels_txt_path,
+    ):
+        val_cls_classid_list = DatasetsDataloadersUtils.read_txt_to_listOflist(
+            voc_cls_val_labels_txt_path
+        )
+        val_cls_image_path_list = DatasetsDataloadersUtils.read_list_from_txtfile(
+            voc_cls_val_images_txt_path
+        )
+
+        single_val_image_path_list = []
+        single_val_label_list = []
+        for idx, val_label_list_per in enumerate(val_cls_classid_list):
+            if len(val_label_list_per) == 1:
+                val_label_per = val_label_list_per[0]
+                single_val_label_list.append(val_label_per)
+                single_val_image_path_list.append(val_cls_image_path_list[idx])
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            single_val_image_path_list, voc_single_cls_val_images_txt_path
+        )
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            single_val_label_list, voc_single_cls_val_labels_txt_path
+        )
+
+    @staticmethod
+    def voc_color_map(N=256, normalized=False):
+        voc_labelname_to_classid_dict = {
+            "background": 0,  # 0
+            "aeroplane": 1,  # 1
+            "bicycle": 2,  # 2
+            "bird": 3,  # 3
+            "boat": 4,  # 4
+            "bottle": 5,  # 5
+            "bus": 6,  # 6
+            "car": 7,  # 7
+            "cat": 8,  # 8
+            "chair": 9,  # 9
+            "cow": 10,  # 10
+            "diningtable": 11,  # 11
+            "dog": 12,  # 12
+            "horse": 13,  # 13
+            "motorbike": 14,  # 14
+            "person": 15,  # 15
+            "pottedplant": 16,  # 16
+            "sheep": 17,  # 17
+            "sofa": 18,  # 18
+            "train": 19,  # 19
+            "tv/monitor": 20,  # 20
+            "void/unlabelled": 255,  # 255
+        }
+
+        def bitget(byteval, idx):
+            return (byteval & (1 << idx)) != 0
+
+        dtype = "float32" if normalized else "uint8"
+        cmap = np.zeros((N, 3), dtype=dtype)
+        for i in range(N):
+            r = g = b = 0
+            c = i
+            for j in range(8):
+                r = r | (bitget(c, 0) << 7 - j)
+                g = g | (bitget(c, 1) << 7 - j)
+                b = b | (bitget(c, 2) << 7 - j)
+                c = c >> 3
+
+            cmap[i] = np.array([r, g, b])
+
+        cmap = cmap / 255 if normalized else cmap
+        print(f"==>> cmap: {cmap}")
+
+        voc_classid_to_labelname_dict = {}
+        for key, value in voc_labelname_to_classid_dict.items():
+            voc_classid_to_labelname_dict[value] = key
+
+        voc_classid_to_color_dict = {}
+        for class_id in list(voc_classid_to_labelname_dict.keys()):
+            per_color = cmap[class_id]
+            per_color_string = f"{per_color[0]}, {per_color[1]}, {per_color[2]}"
+            voc_classid_to_color_dict[class_id] = per_color_string
+
+        voc_color_to_classid_dict = {}
+        for key, value in voc_classid_to_color_dict.items():
+            voc_color_to_classid_dict[value] = key
+
+        return (
+            voc_labelname_to_classid_dict,
+            voc_classid_to_labelname_dict,
+            voc_classid_to_color_dict,
+            voc_color_to_classid_dict,
+        )
+
+    @staticmethod
+    def voc_get_unique_classid(image_path, voc_color_to_classid_dict):
+        img = Image.open(image_path)
+        img = img.convert("RGB")
+        pixels = list(img.getdata())
+        unique_colors = set()
+        for pixel in pixels:
+            unique_colors.add(pixel)
+        unique_colors_list = list(unique_colors)
+
+        unique_classid_list = []
+        for color in unique_colors_list:
+            color_string_per = f"{color[0]}, {color[1]}, {color[2]}"
+            # print(f"==>> color_string_per: {color_string_per}")
+            if color_string_per in voc_color_to_classid_dict:
+                classid_per = voc_color_to_classid_dict[color_string_per]
+                # print(f"==>> classid_per: {classid_per}")
+                if classid_per != 0 and classid_per != 255:
+                    unique_classid_list.append(classid_per - 1)
+            # else:
+            # print(f"Not find the color in voc cmap.")
+            # print(f"==>> color_string_per: {color_string_per}")
+        # print(f"==>> unique_classid_list: {unique_classid_list}")
+
+        return unique_classid_list
+
+    @staticmethod
+    def voc_clean_mask(voc_mask_folder, clean_mask_folder):
+        os.makedirs(clean_mask_folder, exist_ok=True)
+
+        (
+            voc_labelname_to_classid_dict,
+            voc_classid_to_labelname_dict,
+            voc_classid_to_color_dict,
+            voc_color_to_classid_dict,
+        ) = DatasetsDataloadersUtils.voc_color_map()
+        print(f"==>> voc_labelname_to_classid_dict: {voc_labelname_to_classid_dict}")
+        print(f"==>> voc_classid_to_labelname_dict: {voc_classid_to_labelname_dict}")
+        print(f"==>> voc_classid_to_color_dict: {voc_classid_to_color_dict}")
+        print(f"==>> voc_color_to_classid_dict: {voc_color_to_classid_dict}")
+
+        mask_image_path_list = DatasetsDataloadersUtils.get_images_in_folder(
+            voc_mask_folder
+        )
+        mask_image_path_list = sorted(mask_image_path_list)
+
+        for idx, mask_image_path in enumerate(mask_image_path_list):
+            if idx % 100 == 0:
+                print(f"==>> idx: {idx}")
+
+            clean_mask_image_path = os.path.join(
+                clean_mask_folder, mask_image_path.split("/")[-1]
+            )
+
+            mask_image = Image.open(mask_image_path)
+            #
+
+            if mask_image.mode == "L":
+                print(f"==>> mask_image_path: {mask_image_path}")
+                rgb_image = Image.new("RGB", mask_image.size)
+                for class_id, color_str in voc_classid_to_color_dict.items():
+                    color_str_list = color_str.split(",")
+                    color = (
+                        int(color_str_list[0]),
+                        int(color_str_list[1]),
+                        int(color_str_list[2]),
+                    )
+                    color_image = Image.new("RGB", mask_image.size, color)
+                    rgb_image.paste(
+                        color_image,
+                        mask=mask_image.convert("L").point(
+                            lambda p: p == class_id and 255
+                        ),
+                    )
+                rgb_image.save(clean_mask_image_path)
+            else:
+                shutil.copyfile(mask_image_path, clean_mask_image_path)
+
+    @staticmethod
+    def voc_get_cls_image_labels_from_seg_masks(
+        voc_image_folder,
+        voc_mask_folder,
+        voc_seg_train_images_txt_path,
+        voc_seg_val_images_txt_path,
+        voc_cls_train_images_txt_path,
+        voc_cls_train_labels_txt_path,
+        voc_cls_val_images_txt_path,
+        voc_cls_val_labels_txt_path,
+    ):
+        (
+            voc_labelname_to_classid_dict,
+            voc_classid_to_labelname_dict,
+            voc_classid_to_color_dict,
+            voc_color_to_classid_dict,
+        ) = DatasetsDataloadersUtils.voc_color_map()
+        print(f"==>> voc_labelname_to_classid_dict: {voc_labelname_to_classid_dict}")
+        print(f"==>> voc_classid_to_labelname_dict: {voc_classid_to_labelname_dict}")
+        print(f"==>> voc_classid_to_color_dict: {voc_classid_to_color_dict}")
+        print(f"==>> voc_color_to_classid_dict: {voc_color_to_classid_dict}")
+
+        mask_image_path_list = DatasetsDataloadersUtils.get_images_in_folder(
+            voc_mask_folder
+        )
+        mask_image_path_list = sorted(mask_image_path_list)
+
+        train_labelname_list = DatasetsDataloadersUtils.read_list_from_txtfile(
+            voc_seg_train_images_txt_path
+        )
+        val_labelname_list = DatasetsDataloadersUtils.read_list_from_txtfile(
+            voc_seg_val_images_txt_path
+        )
+
+        train_cls_classid_list = []
+        train_cls_image_path_list = []
+        val_cls_classid_list = []
+        val_cls_image_path_list = []
+
+        for idx, mask_image_path in enumerate(mask_image_path_list):
+            if idx % 100 == 0:
+                print(f"==>> idx: {idx}")
+
+            mask_image_name = mask_image_path.split("/")[-1].split(".")[0]
+            image_path = os.path.join(voc_image_folder, mask_image_name + ".jpg")
+
+            unique_classid_per_image = DatasetsDataloadersUtils.voc_get_unique_classid(
+                mask_image_path, voc_color_to_classid_dict
+            )
+
+            if mask_image_name in train_labelname_list:
+                train_cls_image_path_list.append(image_path)
+                train_cls_classid_list.append(unique_classid_per_image)
+            elif mask_image_name in val_labelname_list:
+                val_cls_image_path_list.append(image_path)
+                val_cls_classid_list.append(unique_classid_per_image)
+            else:
+                print(f"Image not in Train or Val.")
+                sys.exit()
+
+        flat_list = [item for sublist in train_cls_classid_list for item in sublist]
+        unique_numbers = set(flat_list)
+        unique_numbers_list = list(unique_numbers)
+        print(f"==>> unique_numbers_list: {unique_numbers_list}")
+
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            train_cls_image_path_list, voc_cls_train_images_txt_path
+        )
+        DatasetsDataloadersUtils.save_listOflist_to_txt(
+            train_cls_classid_list, voc_cls_train_labels_txt_path
+        )
+        DatasetsDataloadersUtils.save_list_to_txtfile(
+            val_cls_image_path_list, voc_cls_val_images_txt_path
+        )
+        DatasetsDataloadersUtils.save_listOflist_to_txt(
+            val_cls_classid_list, voc_cls_val_labels_txt_path
+        )
+
     @staticmethod
     def map_classnames_to_classindex(name_labels_list):
         class_names = sorted(list(set(name_labels_list)))

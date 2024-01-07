@@ -82,20 +82,11 @@ class ImageClassification:
         self.backbone_lr = backbone_lr
         self.onnx_file_path = onnx_file_path
         self.input_sample = input_sample
+        self.model = self.get_model()
 
-    def fit(self):
-        trainer = pl.Trainer(
-            devices=self.num_gpus,
-            accelerator=self.accelerator,
-            strategy=self.strategy,
-            max_epochs=self.max_epochs,
-            min_epochs=self.min_epochs,
-            log_every_n_steps=self.log_every_n_steps,
-            precision=self.precision,
-        )
-
+    def get_model(self):
         if self.train_dataloder is None:
-            self.model = Model(
+            model = Model(
                 self.batch_size,
                 self.lr,
                 num_classes=None,
@@ -120,7 +111,7 @@ class ImageClassification:
 
         else:
             if len(self.class_to_idx) > 0 and self.class_to_idx is not None:
-                self.model = Model(
+                model = Model(
                     self.batch_size,
                     self.lr,
                     num_classes=len(self.class_to_idx),
@@ -135,7 +126,20 @@ class ImageClassification:
             else:
                 print(f"Model config error.")
                 sys.exit()
+        return model
 
+    def fit(self):
+        trainer = pl.Trainer(
+            devices=self.num_gpus,
+            accelerator=self.accelerator,
+            strategy=self.strategy,
+            max_epochs=self.max_epochs,
+            min_epochs=self.min_epochs,
+            log_every_n_steps=self.log_every_n_steps,
+            precision=self.precision,
+        )
+
+        if self.train_dataloder is not None:
             trainer.fit(
                 self.model,
                 train_dataloaders=self.train_dataloder,

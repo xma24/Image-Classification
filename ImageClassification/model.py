@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -22,7 +23,11 @@ logger_initialized = {}
 class ModelUtils:
     @staticmethod
     def get_val_dataloader(
-        val_images_txtfile, val_labels_txtfile, batch_size, N=None, M=None
+        val_images_txtfile,
+        val_labels_txtfile,
+        batch_size,
+        N=None,
+        M=None,
     ):
         # val_images_txtfile = os.path.join("./work_dirs/val_images.txt")
         # val_labels_txtfile = os.path.join("./work_dirs/val_labels.txt")
@@ -62,7 +67,12 @@ class ModelUtils:
 
     @staticmethod
     def get_train_dataloader(
-        train_images_txtfile, train_labels_txtfile, batch_size, N=1, M=1
+        train_images_txtfile,
+        train_labels_txtfile,
+        batch_size,
+        N=1,
+        M=1,
+        data_type="imagenet",
     ):
         # train_images_txtfile = os.path.join("./work_dirs/train_images.txt")
         # train_labels_txtfile = os.path.join("./work_dirs/train_labels.txt")
@@ -72,22 +82,30 @@ class ModelUtils:
         train_labels = DatasetsDataloadersUtils.read_list_from_txtfile(
             train_labels_txtfile
         )
-        (
-            train_label_indices,
-            class_to_idx,
-        ) = DatasetsDataloadersUtils.map_classnames_to_classindex(train_labels)
 
-        # train_transform = transforms.Compose(
-        #     [
-        #         transforms.RandomResizedCrop(224),  # Resize and crop to 224x224
-        #         transforms.RandomHorizontalFlip(),  # Randomly flip horizontally
-        #         transforms.ToTensor(),  # Convert to a PyTorch tensor
-        #         transforms.Normalize(
-        #             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-        #         ),  # Normalize using ImageNet statistics
-        #     ]
-        # )
+        class_to_idx = {}
+        train_dataloader = None
+        class_to_idx_file = os.path.join("./work_dirs", "class_to_idx.json")
+        if data_type == "imagenet":
+            (
+                train_label_indices,
+                class_to_idx,
+            ) = DatasetsDataloadersUtils.map_classnames_to_classindex(train_labels)
 
+        else:
+            unique_str = list(set(train_labels))
+            unique_integers = [int(s) for s in unique_str]
+            unique_integers = sorted(unique_integers)
+            for idx, unique_int in enumerate(unique_integers):
+                class_to_idx[unique_int] = idx
+            os.makedirs("./work_dirs", exist_ok=True)
+            with open(class_to_idx_file, "w") as json_file:
+                json.dump(class_to_idx, json_file)
+
+            train_label_indices = []
+            for label_name in train_labels:
+                train_label_indices.append(int(label_name))
+            # print(f"==>> train_label_indices: {train_label_indices}")
         train_dataset = DatasetsDataloaders.get_dataset(
             image_paths=train_image_paths,
             labels=train_label_indices,
@@ -101,6 +119,7 @@ class ModelUtils:
             train_dataset, batch_size=batch_size, shuffle=True
         )
         print(f"==>> train_dataloader: {len(train_dataloader)}")
+
         return train_dataloader, class_to_idx
 
     @staticmethod
