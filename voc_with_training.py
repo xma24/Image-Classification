@@ -54,11 +54,11 @@ if __name__ == "__main__":
         input_sample=torch.randn(1, 3, 224, 224),
     )
 
-    image_classifier.fit()
+    # image_classifier.fit()
 
     os.makedirs("./work_dirs", exist_ok=True)
     project_path = "./work_dirs/voc_image_classifier.pkl"
-    image_classifier.save(project_path)
+    # image_classifier.save(project_path)
 
     image_classifier = load_model(project_path)
 
@@ -85,6 +85,7 @@ if __name__ == "__main__":
     )
     pil_image = Image.open(test_image_path)
     image_tensor = image_transform(pil_image)
+    print(f"==>> image_tensor.shape: {image_tensor.shape}")
     predictions = image_classifier.transform(image_tensor)
     print(f"\n******* Image Tensor Results *******")
     for prediction in predictions:

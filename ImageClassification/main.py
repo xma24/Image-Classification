@@ -162,9 +162,9 @@ class ImageClassification:
                 transformed_images_list.append(transformed_image)
             transformed_image = torch.stack(transformed_images_list, dim=0)
         elif isinstance(input_data, torch.Tensor):
-            if len(input_data) == 3:
+            if len(input_data.shape) == 3:
                 transformed_image = input_data[None, :, :, :]
-            elif len(input_data) == 4:
+            elif len(input_data.shape) == 4:
                 transformed_image = input_data
             else:
                 print(f"Incorrect Input format.")
