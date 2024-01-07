@@ -149,7 +149,8 @@ class ImageClassification:
             self.save_onnx(self.onnx_file_path, self.input_sample)
 
     @torch.no_grad()
-    def transform(self, input_data):
+    def transform(self, input_data, device):
+        self.model.to(device)
         self.model.eval()
         if isinstance(input_data, str):
             input_data = [input_data]
@@ -169,6 +170,8 @@ class ImageClassification:
             else:
                 print(f"Incorrect Input format.")
 
+        print(f"==>> transformed_image.shape: {transformed_image.shape}")
+        transformed_image = transformed_image.to(device)
         outputs = self.model(transformed_image)
 
         if len(outputs.shape) == 0:  # Handle the case of a 0-dimensional tensor

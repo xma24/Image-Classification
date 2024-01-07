@@ -63,10 +63,10 @@ if __name__ == "__main__":
     image_classifier = load_model(project_path)
 
     test_image_path = "./tests/voc_test_plan_1.jpg"
-    predictions = image_classifier.transform([test_image_path])
-    print(f"\n******* Str List Results *******")
-    for prediction in predictions:
-        print(f"==>> Str List prediction: {prediction}\n")
+    # predictions = image_classifier.transform([test_image_path])
+    # print(f"\n******* Str List Results *******")
+    # for prediction in predictions:
+    #     print(f"==>> Str List prediction: {prediction}\n")
 
     image_transform = transforms.Compose(
         [
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     pil_image = Image.open(test_image_path)
     image_tensor = image_transform(pil_image)
     print(f"==>> image_tensor.shape: {image_tensor.shape}")
-    predictions = image_classifier.transform(image_tensor)
+    predictions = image_classifier.transform(image_tensor, device="cuda:0")
     print(f"\n******* Image Tensor Results *******")
     for prediction in predictions:
         print(f"==>> Image Tensor prediction: {prediction}\n")
