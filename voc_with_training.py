@@ -1,6 +1,8 @@
 import os
 
 import torch
+from PIL import Image
+from torchvision import transforms
 from ImageClassification.main import ImageClassification, ModelUtils, load_model
 
 if __name__ == "__main__":
@@ -31,13 +33,13 @@ if __name__ == "__main__":
     image_classifier = ImageClassification(
         batch_size=batch_size,
         random_state=None,
-        model_name="efficientnetv2_rw_m.agc_in1k",
+        model_name="efficientnet_b0",
         lr=1e-3,
         num_gpus=1,
         precision=16,
         log_every_n_steps=10,
         min_epochs=1,
-        max_epochs=50,
+        max_epochs=3,
         strategy="ddp",
         accelerator="gpu",
         train_dataloder=train_dataloder,
@@ -59,11 +61,31 @@ if __name__ == "__main__":
     image_classifier.save(project_path)
 
     image_classifier = load_model(project_path)
-    predictions = image_classifier.transform(
+
+    test_image_path = "./tests/voc_test_plan_1.jpg"
+    predictions = image_classifier.transform([test_image_path])
+    print(f"\n******* Str List Results *******")
+    for prediction in predictions:
+        print(f"==>> Str List prediction: {prediction}\n")
+
+    image_transform = transforms.Compose(
         [
-            "./tests/voc_test_plan_1.jpg",
+            transforms.Resize(256),  # Resize to 256x256
+            transforms.CenterCrop(224),  # Crop the center to 224x224
+            transforms.ToTensor(),  # Convert to tensor
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],  # Mean values for normalization
+                std=[
+                    0.229,
+                    0.224,
+                    0.225,
+                ],  # Standard deviation values for normalization
+            ),
         ]
     )
-    print(f"\n******* Results *******")
+    pil_image = Image.open(test_image_path)
+    image_tensor = image_transform(pil_image)
+    predictions = image_classifier.transform(image_tensor)
+    print(f"\n******* Image Tensor Results *******")
     for prediction in predictions:
-        print(f"==>> prediction: {prediction}\n")
+        print(f"==>> Image Tensor prediction: {prediction}\n")

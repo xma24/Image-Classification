@@ -154,12 +154,20 @@ class ImageClassification:
         if isinstance(input_data, str):
             input_data = [input_data]
 
-        transformed_images_list = []
-        for image_path in input_data:
-            image = Image.open(image_path)
-            transformed_image = self.val_transform(image)
-            transformed_images_list.append(transformed_image)
-        transformed_image = torch.stack(transformed_images_list, dim=0)
+        if isinstance(input_data, list):
+            transformed_images_list = []
+            for image_path in input_data:
+                image = Image.open(image_path)
+                transformed_image = self.val_transform(image)
+                transformed_images_list.append(transformed_image)
+            transformed_image = torch.stack(transformed_images_list, dim=0)
+        elif isinstance(input_data, torch.Tensor):
+            if len(input_data) == 3:
+                transformed_image = input_data[None, :, :, :]
+            elif len(input_data) == 4:
+                transformed_image = input_data
+            else:
+                print(f"Incorrect Input format.")
 
         outputs = self.model(transformed_image)
 
@@ -200,7 +208,7 @@ class ImageClassification:
             }
             predictions_with_info.append(prediction_info)
 
-        return predictions_with_info
+        return outputs, predictions_with_info
 
     def save(self, path):
         with open(path, "wb") as oup:
